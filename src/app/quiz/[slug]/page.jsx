@@ -51,7 +51,7 @@ export default function QuizPage() {
   const progress = ((current + 1) / quiz.questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 px-6 py-10">
+    <div className="min-h-screen bg-white text-gray-900 px-2 sm:px-6 py-10">
       <div className="max-w-3xl mx-auto">
 
         {/* Progress bar */}
@@ -62,12 +62,12 @@ export default function QuizPage() {
           />
         </div>
 
-        <h1 className="text-4xl font-bold mb-2 text-center">{quiz.title}</h1>
-        <p className="text-lg text-gray-600 text-center mb-10">{quiz.description}</p>
+        <h1 className=" text-xl sm:text-4xl font-bold mb-2 text-center">{quiz.title}</h1>
+        <p className=" text-md sm:text-lg text-gray-600 text-center mb-5 sm:mb-10">{quiz.description}</p>
 
         {!isFinished ? (
           <div className="border border-gray-200 shadow-sm p-8 rounded-xl">
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="text-lg sm:text-2xl font-semibold mb-4">
               {current + 1}. {quiz.questions[current].question}
             </h2>
 
@@ -76,17 +76,17 @@ export default function QuizPage() {
               <img
                 src={quiz.questions[current].image}
                 alt="Question Visual"
-                className="w-full max-h-60 object-cover rounded-lg mb-6 shadow-md"
+                className="w-full max-h-40 sm:max-h-60 object-cover rounded-lg mb-6 shadow-md"
               />
             )}
 
-            <div className="space-y-3 mb-8">
+            <div className=" space-y-2 sm:space-y-3 mb-4 sm:mb-8">
               {quiz.questions[current].options.map((opt, index) => (
                 <button
                   key={index}
                   onClick={() => handleSelect(index)}
                   disabled={showAnswer}
-                  className={`w-full text-left px-4 py-3 rounded-lg border transition-all duration-200 cursor-pointer ${getOptionStyles(index)}`}
+                  className={`w-full text-left px-4 py-2 sm:py-3 rounded-lg border transition-all duration-200 cursor-pointer ${getOptionStyles(index)}`}
                 >
                   {opt}
                 </button>
