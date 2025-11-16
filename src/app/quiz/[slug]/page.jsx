@@ -1,12 +1,24 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useState } from "react";
-import { QUIZZES } from "@/app/data/quizzes";
+import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { getQuizBySlug } from "@/lib/quizService";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { Home, RotateCcw, ArrowRight, Trophy, CheckCircle2, XCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function QuizPage() {
   const { slug } = useParams();
-  const quiz = QUIZZES.find((q) => q.slug === slug);
+  const router = useRouter();
+  const [quiz, setQuiz] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
@@ -14,7 +26,47 @@ export default function QuizPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
 
-  if (!quiz) return <h2 className="text-center text-xl font-semibold mt-10">Quiz not found!</h2>;
+  useEffect(() => {
+    loadQuiz();
+  }, [slug]);
+
+  const loadQuiz = async () => {
+    try {
+      const data = await getQuizBySlug(slug);
+      if (!data) {
+        toast.error("Quiz not found");
+        router.push("/");
+        return;
+      }
+      console.log("Quiz data loaded:", data);
+      console.log("Questions with images:", data.questions.map((q, i) => ({
+        questionNum: i + 1,
+        hasImage: !!q.image,
+        imageUrl: q.image
+      })));
+      setQuiz(data);
+    } catch (error) {
+      console.error("Failed to load quiz:", error);
+      toast.error("Failed to load quiz");
+      router.push("/");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 px-4 py-10">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-12 w-3/4" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!quiz) return null;
 
   const handleNext = () => {
     if (selected === quiz.questions[current].correctIndex) {
@@ -32,109 +84,218 @@ export default function QuizPage() {
   };
 
   const handleSelect = (index) => {
+    if (showAnswer) return;
     setSelected(index);
     setShowAnswer(true);
   };
 
-  const getOptionStyles = (index) => {
-    if (!showAnswer) return "bg-white border-gray-300 hover:bg-gray-100";
+  const handleRestart = () => {
+    setCurrent(0);
+    setScore(0);
+    setSelected(null);
+    setIsFinished(false);
+    setShowAnswer(false);
+  };
 
-    if (index === quiz.questions[current].correctIndex)
-      return "bg-green-500 text-white border-green-600";
+  const getOptionClassName = (index) => {
+    if (!showAnswer) return "border-gray-300 hover:bg-gray-50 cursor-pointer";
 
-    if (index === selected)
-      return "bg-red-500 text-white border-red-600";
+    if (index === quiz.questions[current].correctIndex) {
+      return "border-green-500 bg-green-50 text-green-900";
+    }
 
-    return "bg-white border-gray-300 opacity-50";
+    if (index === selected) {
+      return "border-red-500 bg-red-50 text-red-900";
+    }
+
+    return "border-gray-300 opacity-50";
+  };
+
+  const getOptionIcon = (index) => {
+    if (!showAnswer) return null;
+    
+    if (index === quiz.questions[current].correctIndex) {
+      return <CheckCircle2 className="w-5 h-5 text-green-600" />;
+    }
+    
+    if (index === selected) {
+      return <XCircle className="w-5 h-5 text-red-600" />;
+    }
+    
+    return null;
   };
 
   const progress = ((current + 1) / quiz.questions.length) * 100;
+  const currentQuestion = quiz.questions[current];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 px-2 sm:px-6 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 px-4 py-10">
       <div className="max-w-3xl mx-auto">
-
-        {/* Progress bar */}
-        <div className="w-full bg-gray-200 h-3 rounded-full mb-8">
-          <div
-            className="bg-gradient-to-r from-blue-600 to-purple-600 h-3 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <h1 className=" text-xl sm:text-4xl font-bold mb-2 text-center">{quiz.title}</h1>
-        <p className=" text-md sm:text-lg text-gray-600 text-center mb-5 sm:mb-10">{quiz.description}</p>
-
         {!isFinished ? (
-          <div className="border border-gray-200 shadow-sm p-8 rounded-xl">
-            <h2 className="text-lg sm:text-2xl font-semibold mb-4">
-              {current + 1}. {quiz.questions[current].question}
-            </h2>
+          <>
+            {/* Progress bar */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Question {current + 1} of {quiz.questions.length}
+                </span>
+                <span className="text-sm font-medium text-gray-700">
+                  {Math.round(progress)}%
+                </span>
+              </div>
+              <Progress value={progress} className="h-3" />
+            </div>
 
-            {/* Question Image */}
-            {quiz.questions[current].image && (
-              <img
-                src={quiz.questions[current].image}
-                alt="Question Visual"
-                className="w-full max-h-40 sm:max-h-60 object-cover rounded-lg mb-6 shadow-md"
-              />
-            )}
+            {/* Quiz Info */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                {quiz.title}
+              </h1>
+              <p className="text-gray-600">{quiz.description}</p>
+            </div>
 
-            <div className=" space-y-2 sm:space-y-3 mb-4 sm:mb-8">
-              {quiz.questions[current].options.map((opt, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSelect(index)}
-                  disabled={showAnswer}
-                  className={`w-full text-left px-4 py-2 sm:py-3 rounded-lg border transition-all duration-200 cursor-pointer ${getOptionStyles(index)}`}
+            {/* Question Card */}
+            <Card className="shadow-xl border-2">
+              <CardHeader>
+                <CardTitle className="text-xl sm:text-2xl">
+                  {currentQuestion.question}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Layout: Image on left, Options on right */}
+                {currentQuestion.image && currentQuestion.image.trim() !== "" ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Question Image - Left Side */}
+                    <div className="rounded-lg overflow-hidden border-2 border-gray-200 h-fit">
+                      <img
+                        src={currentQuestion.image}
+                        alt="Question visual"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error("Failed to load image:", currentQuestion.image);
+                          e.target.style.display = "none";
+                          toast.error("Failed to load image. Please check the URL.");
+                        }}
+                        onLoad={() => {
+                          console.log("Image loaded successfully:", currentQuestion.image);
+                        }}
+                      />
+                    </div>
+
+                    {/* Options - Right Side */}
+                    <RadioGroup value={selected?.toString()} className="space-y-3">
+                      {currentQuestion.options.map((option, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleSelect(index)}
+                          className={`flex items-center space-x-3 border-2 rounded-lg p-4 transition-all ${getOptionClassName(index)}`}
+                        >
+                          <RadioGroupItem
+                            value={index.toString()}
+                            id={`option-${index}`}
+                            checked={selected === index}
+                            disabled={showAnswer}
+                          />
+                          <Label
+                            htmlFor={`option-${index}`}
+                            className="flex-1 cursor-pointer text-base"
+                          >
+                            {option}
+                          </Label>
+                          {getOptionIcon(index)}
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                ) : (
+                  /* Options only - No Image */
+                  <RadioGroup value={selected?.toString()} className="space-y-3">
+                    {currentQuestion.options.map((option, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSelect(index)}
+                        className={`flex items-center space-x-3 border-2 rounded-lg p-4 transition-all ${getOptionClassName(index)}`}
+                      >
+                        <RadioGroupItem
+                          value={index.toString()}
+                          id={`option-${index}`}
+                          checked={selected === index}
+                          disabled={showAnswer}
+                        />
+                        <Label
+                          htmlFor={`option-${index}`}
+                          className="flex-1 cursor-pointer text-base"
+                        >
+                          {option}
+                        </Label>
+                        {getOptionIcon(index)}
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
+
+                {/* Next Button */}
+                <Button
+                  onClick={handleNext}
+                  disabled={!showAnswer}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-lg py-6"
                 >
-                  {opt}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleNext}
-              disabled={!showAnswer}
-              className={`w-full py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer
-                ${showAnswer
-                  ? "bg-blue-600 text-white hover:bg-blue-500"
-                  : "bg-gray-300 cursor-not-allowed"
-                }`}
-            >
-              {current === quiz.questions.length - 1 ? "Finish" : "Next"}
-            </button>
-          </div>
+                  {current === quiz.questions.length - 1 ? "Finish Quiz" : "Next Question"}
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          </>
         ) : (
-          <div className="text-center mt-10 p-8 rounded-2xl shadow-xl bg-white/70 backdrop-blur-md border border-gray-200">
-            <h2 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text animate-pulse">
-              🎉 Quiz Completed!
-            </h2>
+          /* Results Screen */
+          <Card className="shadow-2xl border-2">
+            <CardHeader className="text-center space-y-4 pb-2">
+              <div className="flex justify-center">
+                <Trophy className="w-20 h-20 text-yellow-500" />
+              </div>
+              <CardTitle className="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Quiz Completed!
+              </CardTitle>
+              <CardDescription className="text-lg">
+                Great job completing {quiz.title}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              {/* Score Display */}
+              <div className="text-center py-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border-2">
+                <p className="text-6xl font-extrabold bg-gradient-to-r from-green-500 to-teal-500 bg-clip-text text-transparent mb-2">
+                  {score} / {quiz.questions.length}
+                </p>
+                <p className="text-gray-600 text-lg">
+                  {score === quiz.questions.length
+                    ? "Perfect Score! 🎉"
+                    : score >= quiz.questions.length * 0.7
+                    ? "Great Job! 🌟"
+                    : score >= quiz.questions.length * 0.5
+                    ? "Good Effort! 💪"
+                    : "Keep Practicing! 📚"}
+                </p>
+              </div>
 
-            <p className="text-6xl font-extrabold mb-6 bg-gradient-to-r from-green-500 to-teal-400 text-transparent bg-clip-text">
-              {score} / {quiz.questions.length}
-            </p>
-
-            <p className="text-lg text-gray-600 mb-6">
-              Great job! Keep practicing and improving 🚀
-            </p>
-
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-500 transition-all duration-200 shadow-md cursor-pointer"
-              >
-                Try Again
-              </button>
-
-              <a
-                href="/"
-                className="px-6 py-3 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-500 transition-all duration-200 shadow-md cursor-pointer"
-              >
-                Back to Quizzes
-              </a>
-            </div>
-          </div>
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Button
+                  onClick={handleRestart}
+                  variant="outline"
+                  className="w-full py-6 text-lg"
+                >
+                  <RotateCcw className="w-5 h-5 mr-2" />
+                  Try Again
+                </Button>
+                <Link href="/" className="w-full">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-6 text-lg">
+                    <Home className="w-5 h-5 mr-2" />
+                    Back to Home
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
