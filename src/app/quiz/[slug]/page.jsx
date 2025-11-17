@@ -125,6 +125,26 @@ export default function QuizPage() {
     return null;
   };
 
+
+  if (quiz.questions.length === 0) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 px-4 py-10">
+      <div className="max-w-3xl mx-auto text-center space-y-6">
+        <h1 className="text-3xl font-bold">{quiz.title}</h1>
+        <p className="text-gray-600">{quiz.description}</p>
+
+        <Card className="p-6 border-2 shadow-lg">
+          <p className="text-lg font-medium text-gray-700">
+            🚧 This quiz currently has no questions.
+          </p>
+        </Card>
+
+        <Button onClick={() => router.push("/")}>Back to Home</Button>
+      </div>
+    </div>
+  );
+}
+
   const progress = ((current + 1) / quiz.questions.length) * 100;
   const currentQuestion = quiz.questions[current];
 
