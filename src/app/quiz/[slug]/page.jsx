@@ -134,7 +134,7 @@ export default function QuizPage() {
         {!isFinished ? (
           <>
             {/* Progress bar */}
-            <div className="mb-8">
+            <div className="mb-4 sm:mb-8">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">
                   Question {current + 1} of {quiz.questions.length}
@@ -143,21 +143,21 @@ export default function QuizPage() {
                   {Math.round(progress)}%
                 </span>
               </div>
-              <Progress value={progress} className="h-3" />
+              <Progress value={progress} className="h-2 sm:h-3" />
             </div>
 
             {/* Quiz Info */}
-            <div className="text-center mb-8">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+            <div className="text-center mb-4 sm:mb-8">
+              <h1 className="text-xl sm:text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
                 {quiz.title}
               </h1>
               <p className="text-gray-600">{quiz.description}</p>
             </div>
 
             {/* Question Card */}
-            <Card className="shadow-xl border-2">
+            <Card className="shadow-xl border-2 p-2">
               <CardHeader>
-                <CardTitle className="text-xl sm:text-2xl">
+                <CardTitle className="text-base sm:text-2xl">
                   {currentQuestion.question}
                 </CardTitle>
               </CardHeader>
@@ -183,12 +183,12 @@ export default function QuizPage() {
                     </div>
 
                     {/* Options - Right Side */}
-                    <RadioGroup value={selected?.toString()} className="space-y-3">
+                    <RadioGroup value={selected?.toString()} className="space-y-1">
                       {currentQuestion.options.map((option, index) => (
                         <div
                           key={index}
                           onClick={() => handleSelect(index)}
-                          className={`flex items-center space-x-3 border-2 rounded-lg p-4 transition-all ${getOptionClassName(index)}`}
+                          className={`flex items-center space-x-3 border-2 rounded-lg py-2 px-1 transition-all ${getOptionClassName(index)}`}
                         >
                           <RadioGroupItem
                             value={index.toString()}
@@ -238,7 +238,7 @@ export default function QuizPage() {
                 <Button
                   onClick={handleNext}
                   disabled={!showAnswer}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-lg py-6"
+                  className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 text-lg py-6"
                 >
                   {current === quiz.questions.length - 1 ? "Finish Quiz" : "Next Question"}
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -248,7 +248,7 @@ export default function QuizPage() {
           </>
         ) : (
           /* Results Screen */
-          <Card className="shadow-2xl border-2">
+          <Card className="shadow-2xl border-2 mt-8 sm:mt-16 lg:mt-24 mr-2">
             <CardHeader className="text-center space-y-4 pb-2">
               <div className="flex justify-center">
                 <Trophy className="w-20 h-20 text-yellow-500" />
@@ -282,13 +282,13 @@ export default function QuizPage() {
                 <Button
                   onClick={handleRestart}
                   variant="outline"
-                  className="w-full py-6 text-lg"
+                  className="w-full py-6 text-lg cursor-pointer"
                 >
-                  <RotateCcw className="w-5 h-5 mr-2" />
+                  <RotateCcw className="w-5 h-5 mr-2 " />
                   Try Again
                 </Button>
                 <Link href="/" className="w-full">
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-6 text-lg">
+                  <Button className="w-full cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-6 text-lg">
                     <Home className="w-5 h-5 mr-2" />
                     Back to Home
                   </Button>

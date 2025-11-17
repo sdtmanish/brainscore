@@ -101,22 +101,22 @@ function DashboardContent() {
             </h1>
             <p className="text-sm text-gray-600 mt-1">Welcome, {user?.email}</p>
           </div>
-          <Button onClick={handleLogout} variant="outline">
+          <Button className="cursor-pointer" onClick={handleLogout} variant="outline">
             Logout
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Manage Quizzes</h2>
-            <p className="text-gray-600 mt-2">Create, edit, and delete quiz content</p>
+            <h2 className="text-xl sm:text-3xl font-bold text-gray-900">Manage Quizzes</h2>
+            <p className=" text-sm sm:text-base text-gray-600 mt-2">Create, edit, and delete quiz </p>
           </div>
           <Button
             onClick={() => router.push("/admin/quiz/create")}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
           >
             Create New Quiz
           </Button>
@@ -149,17 +149,17 @@ function DashboardContent() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {quizzes.map((quiz) => (
-              <Card key={quiz.id} className="hover:shadow-lg transition-shadow">
+              <Card key={quiz.id} className="hover:shadow-lg transition-shadow p-1">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between ">
                     <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">{quiz.title}</CardTitle>
+                      <CardTitle className="text-md sm:text-xl mb-0 sm:mb-2">{quiz.title}</CardTitle>
                       <CardDescription className="line-clamp-2">{quiz.description}</CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-3">
+                  <div className="flex items-center gap-2 mt-1 sm:mt-3">
                     <Badge className={getQuizTypeColor(quiz.type)} variant="outline">
                       {quiz.type}
                     </Badge>
@@ -169,7 +169,7 @@ function DashboardContent() {
                 <CardContent className="space-y-2">
                   <Button
                     onClick={() => router.push(`/admin/quiz/edit/${quiz.id}`)}
-                    className="w-full"
+                    className="w-full cursor-pointer"
                     variant="outline"
                   >
                     Edit
@@ -179,14 +179,14 @@ function DashboardContent() {
                       setQuizToDelete(quiz);
                       setDeleteDialogOpen(true);
                     }}
-                    className="w-full"
+                    className="w-full cursor-pointer"
                     variant="destructive"
                   >
                     Delete
                   </Button>
                   <Button
                     onClick={() => router.push(`/quiz/${quiz.slug}`)}
-                    className="w-full"
+                    className="w-full cursor-pointer"
                     variant="secondary"
                   >
                     Preview

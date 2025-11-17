@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
@@ -27,22 +26,15 @@ export default function CreateQuizPage() {
 function CreateQuizForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  
+
   // Quiz metadata
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [quizType, setQuizType] = useState("text");
-  
-  // Questions
-  const [questions, setQuestions] = useState([
-    {
-      question: "",
-      image: "",
-      options: ["", "", "", ""],
-      correctIndex: 0,
-    },
-  ]);
+
+  // Questions - initially empty
+  const [questions, setQuestions] = useState([]);
 
   const handleAddQuestion = () => {
     setQuestions([
@@ -57,8 +49,8 @@ function CreateQuizForm() {
   };
 
   const handleRemoveQuestion = (index) => {
-    if (questions.length === 1) {
-      toast.error("Quiz must have at least one question");
+    if (questions.length <= 1) {
+      setQuestions([]);
       return;
     }
     setQuestions(questions.filter((_, i) => i !== index));
@@ -89,10 +81,12 @@ function CreateQuizForm() {
       return;
     }
     updated[questionIndex].options.splice(optionIndex, 1);
-    // Adjust correctIndex if necessary
+
     if (updated[questionIndex].correctIndex >= updated[questionIndex].options.length) {
-      updated[questionIndex].correctIndex = updated[questionIndex].options.length - 1;
+      updated[questionIndex].correctIndex =
+        updated[questionIndex].options.length - 1;
     }
+
     setQuestions(updated);
   };
 
@@ -113,7 +107,6 @@ function CreateQuizForm() {
       })),
     };
 
-    // Validate
     const errors = validateQuizData(quizData);
     if (errors.length > 0) {
       toast.error(errors[0]);
@@ -184,9 +177,6 @@ function CreateQuizForm() {
                   title="Lowercase letters, numbers, and hyphens only"
                   required
                 />
-                <p className="text-sm text-gray-500">
-                  Lowercase letters, numbers, and hyphens only
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -195,7 +185,7 @@ function CreateQuizForm() {
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief description of the quiz content"
+                  placeholder="Brief description of the quiz"
                   rows={3}
                   required
                 />
@@ -213,11 +203,6 @@ function CreateQuizForm() {
                     <SelectItem value="mixed">Mixed (Text & Images)</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-sm text-gray-500">
-                  {quizType === "text" && "All questions will be text-based"}
-                  {quizType === "image" && "All questions will include images"}
-                  {quizType === "mixed" && "Questions can optionally include images"}
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -226,18 +211,19 @@ function CreateQuizForm() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">Questions</h2>
+
               <Button type="button" onClick={handleAddQuestion} variant="outline">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Question
               </Button>
             </div>
 
-            {questions.map((question, qIndex) => (
-              <Card key={qIndex}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Question {qIndex + 1}</CardTitle>
-                    {questions.length > 1 && (
+            {questions.length > 0 &&
+              questions.map((question, qIndex) => (
+                <Card key={qIndex}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Question {qIndex + 1}</CardTitle>
                       <Button
                         type="button"
                         onClick={() => handleRemoveQuestion(qIndex)}
@@ -246,61 +232,77 @@ function CreateQuizForm() {
                       >
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Question Text *</Label>
-                    <Textarea
-                      value={question.question}
-                      onChange={(e) =>
-                        handleQuestionChange(qIndex, "question", e.target.value)
-                      }
-                      placeholder="Enter your question"
-                      rows={2}
-                      required
-                    />
-                  </div>
-
-                  {(quizType === "image" || quizType === "mixed") && (
-                    <div className="space-y-2">
-                      <Label>
-                        Image URL {quizType === "image" ? "*" : "(Optional)"}
-                      </Label>
-                      <Input
-                        value={question.image}
-                        onChange={(e) =>
-                          handleQuestionChange(qIndex, "image", e.target.value)
-                        }
-                        placeholder="https://images.unsplash.com/photo-xxx/image.jpg"
-                        type="url"
-                        required={quizType === "image"}
-                      />
-                      <p className="text-xs text-amber-600">
-                        ⚠️ Use direct image URLs (ending in .jpg, .png, .gif, etc.). For Unsplash: Right-click image → "Copy Image Address"
-                      </p>
-                      {question.image && (
-                        <div className="mt-2">
-                          <img
-                            src={question.image}
-                            alt="Preview"
-                            className="max-h-48 rounded-lg border"
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                              toast.error("Invalid image URL");
-                            }}
-                          />
-                        </div>
-                      )}
                     </div>
-                  )}
+                  </CardHeader>
 
-                  <Separator />
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Question Text *</Label>
+                      <Textarea
+                        value={question.question}
+                        onChange={(e) =>
+                          handleQuestionChange(qIndex, "question", e.target.value)
+                        }
+                        placeholder="Enter your question"
+                        rows={2}
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>Options (Select Correct Answer) *</Label>
+                    {(quizType === "image" || quizType === "mixed") && (
+                      <div className="space-y-2">
+                        <Label>Image URL</Label>
+                        <Input
+                          value={question.image}
+                          onChange={(e) =>
+                            handleQuestionChange(qIndex, "image", e.target.value)
+                          }
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+                    )}
+
+                    <Separator />
+
+                    <div className="space-y-3">
+                      <Label>Options *</Label>
+
+                      <RadioGroup
+                        value={question.correctIndex.toString()}
+                        onValueChange={(value) =>
+                          handleQuestionChange(qIndex, "correctIndex", parseInt(value))
+                        }
+                      >
+                        {question.options.map((option, oIndex) => (
+                          <div key={oIndex} className="flex items-center gap-2">
+                            <RadioGroupItem
+                              value={oIndex.toString()}
+                              id={`q${qIndex}-o${oIndex}`}
+                            />
+                            <Input
+                              value={option}
+                              onChange={(e) =>
+                                handleOptionChange(qIndex, oIndex, e.target.value)
+                              }
+                              placeholder={`Option ${oIndex + 1}`}
+                              required
+                              className="flex-1"
+                            />
+
+                            {question.options.length > 2 && (
+                              <Button
+                                type="button"
+                                onClick={() => handleRemoveOption(qIndex, oIndex)}
+                                variant="ghost"
+                                size="sm"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </RadioGroup>
+
                       <Button
                         type="button"
                         onClick={() => handleAddOption(qIndex)}
@@ -311,48 +313,12 @@ function CreateQuizForm() {
                         Add Option
                       </Button>
                     </div>
-
-                    <RadioGroup
-                      value={question.correctIndex.toString()}
-                      onValueChange={(value) =>
-                        handleQuestionChange(qIndex, "correctIndex", parseInt(value))
-                      }
-                    >
-                      {question.options.map((option, oIndex) => (
-                        <div key={oIndex} className="flex items-center gap-2">
-                          <RadioGroupItem
-                            value={oIndex.toString()}
-                            id={`q${qIndex}-o${oIndex}`}
-                          />
-                          <Input
-                            value={option}
-                            onChange={(e) =>
-                              handleOptionChange(qIndex, oIndex, e.target.value)
-                            }
-                            placeholder={`Option ${oIndex + 1}`}
-                            required
-                            className="flex-1"
-                          />
-                          {question.options.length > 2 && (
-                            <Button
-                              type="button"
-                              onClick={() => handleRemoveOption(qIndex, oIndex)}
-                              variant="ghost"
-                              size="sm"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-600" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <div className="flex gap-4">
             <Button
               type="button"
@@ -365,7 +331,8 @@ function CreateQuizForm() {
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
             >
               {loading ? "Creating..." : "Create Quiz"}
             </Button>

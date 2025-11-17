@@ -85,11 +85,11 @@ export default function QuizHome() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {quizzes.map((quiz) => (
               <Card
                 key={quiz.id}
-                className="group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border-2"
+                className="group p-2 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border-2"
               >
                 <CardHeader className="bg-gradient-to-br from-white to-gray-50">
                   <div className="flex items-start justify-between mb-3">
@@ -111,7 +111,7 @@ export default function QuizHome() {
                     {quiz.description}
                   </CardDescription>
                   <Link href={`/quiz/${quiz.slug}`}>
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 group">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 cursor-pointer hover:from-blue-700 hover:to-purple-700 group ">
                       Start Quiz
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>

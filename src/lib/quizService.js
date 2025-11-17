@@ -220,9 +220,7 @@ export function validateQuizData(quizData) {
     errors.push("Type must be 'text', 'image', or 'mixed'");
   }
   
-  if (!Array.isArray(quizData.questions) || quizData.questions.length === 0) {
-    errors.push("At least one question is required");
-  }
+
   
   quizData.questions?.forEach((q, index) => {
     if (!q.question || q.question.trim().length === 0) {

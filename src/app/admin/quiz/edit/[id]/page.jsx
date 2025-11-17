@@ -81,10 +81,10 @@ function EditQuizForm() {
   };
 
   const handleRemoveQuestion = (index) => {
-    if (questions.length === 1) {
-      toast.error("Quiz must have at least one question");
-      return;
-    }
+    // if (questions.length === 1) {
+    //   toast.error("Quiz must have at least one question");
+    //   return;
+    // }
     setQuestions(questions.filter((_, i) => i !== index));
   };
 
@@ -244,10 +244,10 @@ function EditQuizForm() {
           </Card>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between ">
               <h2 className="text-xl font-bold">Questions</h2>
-              <Button type="button" onClick={handleAddQuestion} variant="outline">
-                <Plus className="w-4 h-4 mr-2" />
+              <Button type="button" onClick={handleAddQuestion} variant="outline" className="cursor-pointer">
+                <Plus className="w-4 h-4 mr-2 " />
                 Add Question
               </Button>
             </div>
@@ -257,7 +257,7 @@ function EditQuizForm() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">Question {qIndex + 1}</CardTitle>
-                    {questions.length > 1 && (
+                    
                       <Button
                         type="button"
                         onClick={() => handleRemoveQuestion(qIndex)}
@@ -266,7 +266,7 @@ function EditQuizForm() {
                       >
                         <Trash2 className="w-4 h-4 text-red-600" />
                       </Button>
-                    )}
+                 
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -320,6 +320,7 @@ function EditQuizForm() {
                         onClick={() => handleAddOption(qIndex)}
                         variant="outline"
                         size="sm"
+                        className="cursor-pointer"
                       >
                         <Plus className="w-3 h-3 mr-1" />
                         Add Option
@@ -370,14 +371,14 @@ function EditQuizForm() {
               type="button"
               onClick={() => router.push("/admin")}
               variant="outline"
-              className="flex-1"
+              className="flex-1 cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer" 
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>
