@@ -158,7 +158,7 @@ function CreateQuizForm() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <Button onClick={() => router.push("/admin")} variant="ghost" className="mb-2">
+          <Button onClick={() => router.push("/admin")} variant="ghost" className="mb-2 cursor-pointer">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
@@ -211,7 +211,7 @@ function CreateQuizForm() {
           {/* Questions */}
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold">Questions</h2>
-            <Button type="button" onClick={handleAddQuestion} variant="outline">
+            <Button type="button" onClick={handleAddQuestion} variant="outline" className="cursor-pointer">
               <Plus className="mr-2 h-4 w-4" /> Add Question
             </Button>
           </div>
@@ -280,7 +280,8 @@ function CreateQuizForm() {
                   >
                     {question.options.map((option, oIndex) => (
                       <div key={oIndex} className="flex gap-2 items-center mt-1">
-                        <RadioGroupItem value={oIndex.toString()} />
+                        <RadioGroupItem value={oIndex.toString()} 
+                          className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"/>
 
                         <Input
                           value={option}
@@ -323,10 +324,10 @@ function CreateQuizForm() {
 
           {/* Submit */}
           <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => router.push("/admin")} className="flex-1">
+            <Button type="button" variant="outline" onClick={() => router.push("/admin")} className="flex-1 cursor-pointer">
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || uploading} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600">
+            <Button type="submit" disabled={loading || uploading} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 cursor-pointer">
               {uploading ? "Uploading media..." : loading ? "Creating..." : "Create Quiz"}
             </Button>
           </div>

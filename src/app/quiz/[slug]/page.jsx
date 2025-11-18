@@ -39,7 +39,6 @@ export default function QuizPage() {
       }
       setQuiz(data);
     } catch (error) {
-      console.error("Failed to load quiz:", error);
       toast.error("Failed to load quiz");
       router.push("/");
     } finally {
@@ -92,14 +91,16 @@ export default function QuizPage() {
 
   const getOptionClassName = (index) => {
     if (!showAnswer) return "border-gray-300 hover:bg-gray-50 cursor-pointer";
-    if (index === quiz.questions[current].correctIndex) return "border-green-500 bg-green-50 text-green-900";
+    if (index === quiz.questions[current].correctIndex)
+      return "border-green-500 bg-green-50 text-green-900";
     if (index === selected) return "border-red-500 bg-red-50 text-red-900";
     return "border-gray-300 opacity-50";
   };
 
   const getOptionIcon = (index) => {
     if (!showAnswer) return null;
-    if (index === quiz.questions[current].correctIndex) return <CheckCircle2 className="w-5 h-5 text-green-600" />;
+    if (index === quiz.questions[current].correctIndex)
+      return <CheckCircle2 className="w-5 h-5 text-green-600" />;
     if (index === selected) return <XCircle className="w-5 h-5 text-red-600" />;
     return null;
   };
@@ -130,10 +131,10 @@ export default function QuizPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 px-4 py-10">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {!isFinished ? (
           <>
-            <div className="mb-6">
+            <div className="mb-2 sm:mb-6">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">
                   Question {current + 1} of {quiz.questions.length}
@@ -145,57 +146,70 @@ export default function QuizPage() {
               <Progress value={progress} className="h-2" />
             </div>
 
-            <div className="text-center mb-8">
+            <div className="text-center mb-4  sm:mb-8">
               <h1 className="text-3xl font-bold">{quiz.title}</h1>
               <p className="text-gray-600">{quiz.description}</p>
             </div>
 
             <Card className="shadow-xl border-2 p-2">
-              <CardHeader>
-                <CardTitle className="text-2xl">{currentQuestion.question}</CardTitle>
+              <CardHeader >
+                <CardTitle className="text-xl sm:text-2xl ">Q{current + 1}. {currentQuestion.question}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
 
-                {currentQuestion.image && currentQuestion.image.trim() !== "" && (
-                  <div className="rounded-lg overflow-hidden border-2 border-gray-200 h-fit">
-                    {isVideo ? (
-                      <video
-                        src={currentQuestion.image}
-                        controls
-                        className="w-full h-full object-cover"
-                        onError={() => toast.error("Failed to load video")}
-                      />
-                    ) : (
-                      <img
-                        src={currentQuestion.image}
-                        alt="Question visual"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          toast.error("Failed to load image");
-                        }}
-                      />
-                    )}
-                  </div>
-                )}
+              <CardContent className="space-y-4">
 
-                <RadioGroup value={selected?.toString()} className="space-y-3">
-                  {currentQuestion.options.map((option, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleSelect(index)}
-                      className={`flex items-center space-x-3 border-2 rounded-lg p-4 transition-all ${getOptionClassName(
-                        index
-                      )}`}
-                    >
-                      <RadioGroupItem value={index.toString()} id={`option-${index}`} checked={selected === index} disabled={showAnswer} />
-                      <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-base">
-                        {option}
-                      </Label>
-                      {getOptionIcon(index)}
+                {/* MEDIA LEFT, OPTIONS RIGHT */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-6 items-start">
+
+                  {/* MEDIA */}
+                  {currentQuestion.image && currentQuestion.image.trim() !== "" && (
+                    <div className="rounded-lg overflow-hidden border-2 border-gray-200 max-h-[200px] sm:max-h-[500px]">
+                      {isVideo ? (
+                        <video
+                          src={currentQuestion.image}
+                          controls
+                          className="w-full max-h-[500px] object-contain"
+                          onError={() => toast.error("Failed to load video")}
+                        />
+                      ) : (
+                        <img
+                          src={currentQuestion.image}
+                          alt="Question visual"
+                          className="w-full max-h-[200px] sm:max-h-[500px] object-contain"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            toast.error("Failed to load image");
+                          }}
+                        />
+                      )}
                     </div>
-                  ))}
-                </RadioGroup>
+                  )}
+
+
+                  {/* OPTIONS */}
+                  <div>
+                    <RadioGroup value={selected?.toString()} className="space-y-1">
+                      {currentQuestion.options.map((option, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleSelect(index)}
+                          className={`flex items-center space-x-3 border-2 rounded-lg p-2 sm:p-4 transition-all ${getOptionClassName(
+                            index
+                          )}`}
+                        >
+                          <RadioGroupItem
+                            value={index.toString()}
+                            checked={selected === index}
+                            disabled={showAnswer}
+                          />
+                          <Label className="flex-1 cursor-pointer text-base">{option}</Label>
+                          {getOptionIcon(index)}
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+
+                </div>
 
                 <Button
                   onClick={handleNext}
@@ -205,6 +219,7 @@ export default function QuizPage() {
                   {current === quiz.questions.length - 1 ? "Finish Quiz" : "Next Question"}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
+
               </CardContent>
             </Card>
           </>
@@ -215,6 +230,7 @@ export default function QuizPage() {
               <CardTitle className="text-4xl font-extrabold">Quiz Completed!</CardTitle>
               <CardDescription className="text-lg">Great job completing {quiz.title}</CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-6 pt-6">
               <div className="text-center py-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border-2">
                 <p className="text-6xl font-extrabold text-green-500 mb-2">
@@ -222,12 +238,13 @@ export default function QuizPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button onClick={handleRestart} variant="outline" className="w-full py-6 text-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
+                <Button onClick={handleRestart} variant="outline" className="w-full py-6 text-lg cursor-pointer">
                   <RotateCcw className="w-5 h-5 mr-2" /> Try Again
                 </Button>
-                <Link href="/" className="w-full">
-                  <Button className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-purple-600">
+
+                <Link href="/" className="w-full ">
+                  <Button className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-purple-600 cursor-pointer ">
                     <Home className="w-5 h-5 mr-2" /> Back to Home
                   </Button>
                 </Link>
