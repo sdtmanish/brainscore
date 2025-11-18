@@ -18,7 +18,6 @@ export default function AdminLoginPage() {
   const { login, isAdmin } = useAuth();
   const router = useRouter();
 
-  // Redirect if already logged in as admin
   useEffect(() => {
     if (isAdmin) {
       router.push("/admin");
@@ -36,18 +35,18 @@ export default function AdminLoginPage() {
       router.push("/admin");
     } catch (error) {
       console.error("Login failed:", error);
-      
       let errorMessage = "Failed to login. Please try again.";
+
       if (error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
         errorMessage = "Invalid email or password";
       } else if (error.code === "auth/invalid-email") {
         errorMessage = "Invalid email format";
       } else if (error.code === "auth/too-many-requests") {
-        errorMessage = "Too many failed attempts. Please try again later.";
-      } else if (error.message.includes("Unauthorized")) {
+        errorMessage = "Too many failed attempts. Try again later.";
+      } else if (error.message?.includes("Unauthorized")) {
         errorMessage = "Unauthorized: Only admin can login";
       }
-      
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -66,12 +65,12 @@ export default function AdminLoginPage() {
             Enter your credentials to access the admin dashboard
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label>Email</Label>
               <Input
-                id="email"
                 type="email"
                 placeholder="admin@brainscore.com"
                 value={email}
@@ -80,10 +79,10 @@ export default function AdminLoginPage() {
                 disabled={loading}
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label>Password</Label>
               <Input
-                id="password"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
@@ -110,6 +109,17 @@ export default function AdminLoginPage() {
 
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>Admin access only</p>
+          </div>
+
+          {/* Back to home button */}
+          <div className="mt-4 text-center">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/")}
+              className="cursor-pointer"
+            >
+              Back to Home
+            </Button>
           </div>
         </CardContent>
       </Card>

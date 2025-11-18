@@ -264,8 +264,8 @@ function EditQuizForm() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="text">Text Only</SelectItem>
-                    <SelectItem value="image">Image Only</SelectItem>
-                    <SelectItem value="mixed">Mixed (Text & Images)</SelectItem>
+                    <SelectItem value="image">Image/Video Only</SelectItem>
+                    <SelectItem value="mixed">Mixed (Text, Images & Videos)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

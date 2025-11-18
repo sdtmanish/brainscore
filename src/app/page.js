@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 import { getAllQuizzes } from "@/lib/quizService";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,8 @@ import { ArrowRight, BookOpen } from "lucide-react";
 export default function QuizHome() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
 
   useEffect(() => {
     loadQuizzes();
@@ -54,10 +58,23 @@ export default function QuizHome() {
               BrainScore
             </h1>
           </div>
+
           <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
             Challenge yourself with interactive quizzes and boost your knowledge
           </p>
+
+          {/* Login Buttons Section */}
+          <div className="flex justify-center gap-4 mt-8 ">
+            <Button
+              onClick={() => router.push("/admin/login")}
+              className="px-6 py-3 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
+            >
+              Login
+            </Button>
+
+          </div>
         </div>
+
 
         {/* Quizzes Grid */}
         {loading ? (
