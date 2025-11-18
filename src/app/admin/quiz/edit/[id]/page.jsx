@@ -31,13 +31,13 @@ function EditQuizForm() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // Quiz metadata
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [quizType, setQuizType] = useState("text");
-  
+
   // Questions
   const [questions, setQuestions] = useState([]);
 
@@ -58,7 +58,13 @@ function EditQuizForm() {
       setTitle(quiz.title);
       setDescription(quiz.description);
       setQuizType(quiz.type);
-      setQuestions(quiz.questions || []);
+    setQuestions(
+  (quiz.questions || []).map(q => ({
+    ...q,
+    image: q.image || q.imageUrl || "",
+  }))
+);
+
     } catch (error) {
       console.error("Failed to load quiz:", error);
       toast.error("Failed to load quiz");
@@ -169,6 +175,29 @@ function EditQuizForm() {
     );
   }
 
+  const handleFileUpload = async (e, qIndex) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append(
+      "upload_preset",
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    );
+
+    const endpoint = file.type.startsWith("video")
+      ? `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload`
+      : `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    handleQuestionChange(qIndex, "image", data.secure_url);
+  };
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
@@ -257,16 +286,16 @@ function EditQuizForm() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">Question {qIndex + 1}</CardTitle>
-                    
-                      <Button
-                        type="button"
-                        onClick={() => handleRemoveQuestion(qIndex)}
-                        variant="ghost"
-                        size="sm"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </Button>
-                 
+
+                    <Button
+                      type="button"
+                      onClick={() => handleRemoveQuestion(qIndex)}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -284,30 +313,33 @@ function EditQuizForm() {
 
                   {(quizType === "image" || quizType === "mixed") && (
                     <div className="space-y-2">
-                      <Label>
-                        Image URL {quizType === "image" ? "*" : "(Optional)"}
-                      </Label>
-                      <Input
-                        value={question.image || ""}
-                        onChange={(e) =>
-                          handleQuestionChange(qIndex, "image", e.target.value)
-                        }
-                        placeholder="https://images.unsplash.com/photo-xxx/image.jpg"
-                        type="url"
-                        required={quizType === "image"}
+                      <Label>Upload Image / Video</Label>
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        onChange={(e) => handleFileUpload(e, qIndex)}
+                        className="border p-2 rounded cursor-pointer"
                       />
-                      <p className="text-xs text-amber-600">
-                        ⚠️ Use direct image URLs (ending in .jpg, .png, .gif, etc.). For Unsplash: Right-click image → "Copy Image Address"
-                      </p>
+
                       {question.image && (
-                        <img
-                          src={question.image}
-                          alt="Preview"
-                          className="max-h-48 rounded-lg border"
-                          onError={(e) => (e.target.style.display = "none")}
-                        />
+                        <>
+                          {question.image.includes("/video/") ? (
+                            <video
+                              src={question.image}
+                              className="w-48 h-32 rounded mt-2"
+                              controls
+                            />
+                          ) : (
+                            <img
+                              src={question.image}
+                              alt="Preview"
+                              className="w-32 h-32 object-cover rounded mt-2"
+                            />
+                          )}
+                        </>
                       )}
                     </div>
+
                   )}
 
                   <Separator />
@@ -378,7 +410,7 @@ function EditQuizForm() {
             <Button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer" 
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>

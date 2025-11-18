@@ -101,7 +101,8 @@ function CreateQuizForm() {
       type: quizType,
       questions: questions.map((q) => ({
         question: q.question.trim(),
-        image: q.image.trim() || undefined,
+        image:q.image ? q.image.trim() : undefined,
+
         options: q.options.map((opt) => opt.trim()),
         correctIndex: q.correctIndex,
       })),
@@ -125,6 +126,29 @@ function CreateQuizForm() {
       setLoading(false);
     }
   };
+
+  const handleFileUpload = async (e, qIndex) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append(
+      "upload_preset",
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    );
+
+    const endpoint = file.type.startsWith("video")
+      ? `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload`
+      : `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    handleQuestionChange(qIndex, "image", data.secure_url);
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
@@ -251,14 +275,33 @@ function CreateQuizForm() {
 
                     {(quizType === "image" || quizType === "mixed") && (
                       <div className="space-y-2">
-                        <Label>Image URL</Label>
-                        <Input
-                          value={question.image}
-                          onChange={(e) =>
-                            handleQuestionChange(qIndex, "image", e.target.value)
-                          }
-                          placeholder="https://example.com/image.jpg"
+                        <Label>Upload Image / Video</Label>
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          onChange={(e) => handleFileUpload(e, qIndex)}
+                          className="border p-2 rounded"
                         />
+
+                        {question.image && (
+                          <>
+                            {question.image.endsWith(".mp4") ||
+                              question.image.endsWith(".mov") ||
+                              question.image.includes("video") ? (
+                              <video
+                                src={question.image}
+                                className="w-48 h-32 rounded mt-2"
+                                controls
+                              />
+                            ) : (
+                              <img
+                                src={question.image}
+                                alt="Preview"
+                                className="w-32 h-32 object-cover rounded mt-2"
+                              />
+                            )}
+                          </>
+                        )}
                       </div>
                     )}
 
