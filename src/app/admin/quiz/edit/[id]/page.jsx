@@ -270,7 +270,7 @@ function EditQuizForm() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="text">Text Only</SelectItem>
-                    <SelectItem value="image">Image/Video Only</SelectItem>
+                    <SelectItem value="image/Video">Image/Video Only</SelectItem>
                     <SelectItem value="mixed">Mixed</SelectItem>
                   </SelectContent>
                 </Select>

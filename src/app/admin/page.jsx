@@ -81,7 +81,7 @@ function DashboardContent() {
     switch (type) {
       case "text":
         return "bg-blue-100 text-blue-800 border-blue-300";
-      case "image":
+      case "image/Video":
         return "bg-purple-100 text-purple-800 border-purple-300";
       case "mixed":
         return "bg-green-100 text-green-800 border-green-300";
@@ -200,18 +200,18 @@ function DashboardContent() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent >
           <DialogHeader>
-            <DialogTitle>Delete Quiz</DialogTitle>
+            <DialogTitle >Delete Quiz</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete "{quizToDelete?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="cursor-pointer">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button variant="destructive" onClick={handleDelete} className="cursor-pointer">
               Delete
             </Button>
           </DialogFooter>

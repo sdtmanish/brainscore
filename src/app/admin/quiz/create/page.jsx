@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { createQuiz, validateQuizData } from "@/lib/quizService";
@@ -37,6 +37,13 @@ function CreateQuizForm() {
 
   const [questions, setQuestions] = useState([]);
 
+  const questionEndRef = useRef(null);
+
+const scrollToBottom = () => {
+  questionEndRef.current?.scrollIntoView({ behavior: "smooth" });
+};
+
+
   const handleAddQuestion = () => {
     setQuestions(prev => [
       ...prev,
@@ -47,6 +54,9 @@ function CreateQuizForm() {
         correctIndex: 0,
       }
     ]);
+
+    setTimeout(scrollToBottom, 80)
+
   };
 
   const handleRemoveQuestion = (index) => {
@@ -196,7 +206,7 @@ function CreateQuizForm() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="text">Text Only</SelectItem>
-                    <SelectItem value="image">Image / Video</SelectItem>
+                    <SelectItem value="image/Video">Image / Video</SelectItem>
                     <SelectItem value="mixed">Mixed</SelectItem>
                   </SelectContent>
                 </Select>
@@ -214,7 +224,7 @@ function CreateQuizForm() {
           {questions.map((question, qIndex) => (
             <Card key={qIndex} className="space-y-3">
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div ref={questionEndRef} className="flex justify-between items-center">
                   <CardTitle>Question {qIndex + 1}</CardTitle>
                   <Button variant="ghost" size="sm" className="cursor-pointer" onClick={() => handleRemoveQuestion(qIndex)}>
                     <Trash2 className="w-4 h-4 text-red-600 " />
@@ -229,7 +239,7 @@ function CreateQuizForm() {
                   required
                 />
 
-                {(quizType === "image" || quizType === "mixed") && (
+                {(quizType === "image/Video" || quizType === "mixed") && (
                   <div className="space-y-2">
                     <Label>Upload Image / Video</Label>
                     <input

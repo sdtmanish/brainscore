@@ -186,8 +186,8 @@ export function validateQuizData(quizData) {
     errors.push("Description is required");
   }
 
-  if (!["text", "image", "mixed"].includes(quizData.type)) {
-    errors.push("Type must be 'text', 'image', or 'mixed'");
+  if (!["text", "image/Video", "mixed"].includes(quizData.type)) {
+    errors.push("Type must be 'text', 'image/Video', or 'mixed'");
   }
 
   quizData.questions?.forEach((q, index) => {
