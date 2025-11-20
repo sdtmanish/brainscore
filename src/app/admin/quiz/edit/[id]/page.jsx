@@ -32,7 +32,7 @@ function EditQuizForm() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [uploading, setUploading] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [slug, setSlug] = useState("");
@@ -41,7 +41,6 @@ function EditQuizForm() {
   const [quizType, setQuizType] = useState("text");
   const [questions, setQuestions] = useState([]);
 
-  // REF FOR SCROLL
   const questionEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -71,7 +70,6 @@ function EditQuizForm() {
           image: q.image || q.imageUrl || "",
         }))
       );
-
     } catch (error) {
       toast.error("Failed to load quiz");
       router.push("/admin");
@@ -90,10 +88,7 @@ function EditQuizForm() {
         correctIndex: 0,
       },
     ]);
-
-    setTimeout(() => {
-      scrollToBottom();
-    }, 80);
+    setTimeout(scrollToBottom, 80);
   };
 
   const handleRemoveQuestion = (index) => {
@@ -131,12 +126,57 @@ function EditQuizForm() {
     setQuestions(updated);
   };
 
+  const handleFileUpload = async (e, qIndex) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingIndex(qIndex);
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+
+    const endpoint = file.type.startsWith("video")
+      ? `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload`
+      : `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", endpoint);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percent);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const response = JSON.parse(xhr.responseText);
+        handleQuestionChange(qIndex, "image", response.secure_url);
+        setUploadingIndex(null);
+        toast.success("Media uploaded successfully");
+      } else {
+        toast.error("Upload failed");
+        setUploadingIndex(null);
+      }
+    };
+
+    xhr.onerror = () => {
+      toast.error("Upload error");
+      setUploadingIndex(null);
+    };
+
+    xhr.send(formData);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
 
-    if (uploading) {
-      toast.error("Please wait until media finishes uploading.");
+    if (uploadingIndex !== null) {
+      toast.error("Please wait until upload completes.");
       setSaving(false);
       return;
     }
@@ -172,52 +212,6 @@ function EditQuizForm() {
     }
   };
 
-  const handleFileUpload = async (e, qIndex) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploading(true);
-    setUploadProgress(0);
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-
-    const endpoint = file.type.startsWith("video")
-      ? `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload`
-      : `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`;
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", endpoint);
-
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
-        setUploadProgress(percent);
-      }
-    };
-
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        const response = JSON.parse(xhr.responseText);
-        handleQuestionChange(qIndex, "image", response.secure_url);
-        setUploading(false);
-        setUploadProgress(0);
-        toast.success("Media uploaded successfully");
-      } else {
-        toast.error("Upload failed");
-        setUploading(false);
-      }
-    };
-
-    xhr.onerror = () => {
-      toast.error("Upload error");
-      setUploading(false);
-    };
-
-    xhr.send(formData);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
@@ -236,7 +230,7 @@ function EditQuizForm() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <Button onClick={() => router.push("/admin")} variant="ghost" className="mb-2 cursor-pointer">
+          <Button onClick={() => router.push("/admin")} variant="ghost" className="cursor-pointer">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -251,33 +245,33 @@ function EditQuizForm() {
           <Card>
             <CardHeader>
               <CardTitle>Quiz Details</CardTitle>
-              <CardDescription>Basic information about your quiz</CardDescription>
+              <CardDescription>Basic information</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+              <div>
                 <Label>Quiz Title *</Label>
                 <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <Label>URL Slug *</Label>
                 <Input value={slug} onChange={(e) => setSlug(e.target.value)} pattern="[a-z0-9-]+" required />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <Label>Description *</Label>
                 <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
               </div>
 
-              <div className="space-y-2">
+              <div>
                 <Label>Quiz Type *</Label>
                 <Select value={quizType} onValueChange={setQuizType}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="text">Text Only</SelectItem>
                     <SelectItem value="image">Image/Video Only</SelectItem>
-                    <SelectItem value="mixed">Mixed (Text, Images & Videos)</SelectItem>
+                    <SelectItem value="mixed">Mixed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -285,10 +279,10 @@ function EditQuizForm() {
           </Card>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">Questions</h2>
               <Button type="button" onClick={handleAddQuestion} variant="outline" className="cursor-pointer">
-                <Plus className="w-4 h-4 mr-2 " /> Add Question
+                <Plus className="w-4 h-4 mr-2" /> Add Question
               </Button>
             </div>
 
@@ -297,7 +291,8 @@ function EditQuizForm() {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>Question {qIndex + 1}</CardTitle>
-                    <Button type="button" variant="ghost" size="sm" className="cursor-pointer" onClick={() => handleRemoveQuestion(qIndex)}>
+                    <Button type="button" variant="ghost" size="sm" className="cursor-pointer"
+                      onClick={() => handleRemoveQuestion(qIndex)}>
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </Button>
                   </div>
@@ -314,29 +309,29 @@ function EditQuizForm() {
                   {(quizType === "image" || quizType === "mixed") && (
                     <div className="space-y-2">
                       <Label>Upload Image / Video</Label>
-
                       <input
                         type="file"
                         accept="image/*,video/*"
                         onChange={(e) => handleFileUpload(e, qIndex)}
                         className="border p-2 rounded cursor-pointer"
+                        disabled={uploadingIndex !== null}
                       />
 
-                      {uploading && (
+                      {uploadingIndex === qIndex && (
                         <div className="w-full bg-gray-200 rounded-full h-3 mt-1">
                           <div
-                            className="bg-blue-600 h-3 rounded-full transition-all"
+                            className="bg-blue-600 h-3 rounded-full"
                             style={{ width: `${uploadProgress}%` }}
                           />
                         </div>
                       )}
 
-                      {question.image && !uploading && (
+                      {question.image && uploadingIndex !== qIndex && (
                         <>
                           {question.image.includes("/video/") ? (
                             <video src={question.image} className="w-48 h-32 rounded mt-2" controls />
                           ) : (
-                            <img src={question.image} className="w-32 h-32 object-cover rounded mt-2" />
+                            <img src={question.image} className="w-32 h-32 rounded mt-2 object-cover" />
                           )}
                         </>
                       )}
@@ -347,14 +342,14 @@ function EditQuizForm() {
 
                   <RadioGroup
                     value={question.correctIndex.toString()}
-                    onValueChange={(value) =>
-                      handleQuestionChange(qIndex, "correctIndex", parseInt(value))
+                    onValueChange={(val) =>
+                      handleQuestionChange(qIndex, "correctIndex", parseInt(val))
                     }
                   >
                     {question.options.map((opt, oIndex) => (
                       <div key={oIndex} className="flex items-center gap-2">
                         <RadioGroupItem value={oIndex.toString()}
-                         className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600" />
+                          className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600" />
                         <Input
                           value={opt}
                           onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
@@ -362,12 +357,8 @@ function EditQuizForm() {
                           className="flex-1"
                         />
                         {question.options.length > 2 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveOption(qIndex, oIndex)}
-                          >
+                          <Button type="button" variant="ghost" size="sm" className="cursor-pointer"
+                            onClick={() => handleRemoveOption(qIndex, oIndex)}>
                             <Trash2 className="w-4 h-4 text-red-600" />
                           </Button>
                         )}
@@ -375,14 +366,14 @@ function EditQuizForm() {
                     ))}
                   </RadioGroup>
 
-                  <Button type="button" variant="outline" size="sm" onClick={() => handleAddOption(qIndex)}>
+                  <Button type="button" variant="outline" size="sm" className="cursor-pointer"
+                    onClick={() => handleAddOption(qIndex)}>
                     <Plus className="w-3 h-3 mr-1" /> Add Option
                   </Button>
                 </CardContent>
               </Card>
             ))}
 
-            {/* SCROLL TARGET */}
             <div ref={questionEndRef} />
           </div>
 
@@ -393,12 +384,13 @@ function EditQuizForm() {
 
             <Button
               type="submit"
-              disabled={saving || uploading}
+              disabled={saving || uploadingIndex !== null}
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 cursor-pointer"
             >
-              {uploading ? "Uploading media..." : saving ? "Saving..." : "Save Changes"}
+              {uploadingIndex !== null ? "Uploading media..." : saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
+
         </form>
       </main>
     </div>

@@ -142,7 +142,7 @@ function DashboardContent() {
               <p className="text-gray-600 text-lg mb-4">No quizzes found</p>
               <Button
                 onClick={() => router.push("/admin/quiz/create")}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
               >
                 Create Your First Quiz
               </Button>
