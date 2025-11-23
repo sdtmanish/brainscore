@@ -306,7 +306,7 @@ function EditQuizForm() {
                     required
                   />
 
-                  {(quizType === "image" || quizType === "mixed") && (
+                  {(quizType === "image/Video" || quizType === "mixed") && (
                     <div className="space-y-2">
                       <Label>Upload Image / Video</Label>
                       <input
