@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,7 +22,6 @@ export const metadata = {
     icon: "/icons/icon-192.png",
     apple: "/icons/icon-512.png",
   },
-
 };
 
 export const viewport = {
@@ -47,19 +47,17 @@ export default function RootLayout({ children }) {
           <Toaster />
         </AuthProvider>
 
-      <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js");
-        });
-      }
-    `,
-  }}
-/>
-
-
+        {/* ✅ Correct SW registration for Next.js App Router */}
+        <Script id="sw-register" strategy="afterInteractive">
+          {`
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker
+                .register("/sw.js")
+                .then(() => console.log("SW registered"))
+                .catch((err) => console.error("SW registration failed:", err));
+            }
+          `}
+        </Script>
       </body>
     </html>
   );
